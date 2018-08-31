@@ -1,3 +1,6 @@
+//aggiungere un set o un map per salvare gli utenti che hanno risposto. o magari
+//inserirli in un set di oggetti della classe utenti. qualcosa del genere.
+
 
 #include<thread> 
 #include<stdio.h>
