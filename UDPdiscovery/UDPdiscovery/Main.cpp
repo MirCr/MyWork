@@ -1,5 +1,7 @@
 //aggiungere un set o un map per salvare gli utenti che hanno risposto. o magari
 //inserirli in un set di oggetti della classe utenti. qualcosa del genere.
+//usare le condition varible, per passare, al thread principale, ogni volta che si trova un nuovo 
+//utente. 
 
 
 #include<thread> 
