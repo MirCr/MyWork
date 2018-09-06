@@ -3,7 +3,7 @@
 //usare le condition varible, per passare, al thread principale, ogni volta che si trova un nuovo 
 //utente. 
 
-
+//qualche derscizione sotto. ******** 
 
 /*merging of client func with serve func in order to use just a single thread to found out 
 on line users. 
@@ -17,7 +17,8 @@ goals:
 
 #include<thread> 
 #include<stdio.h>
-#include<winsock2.h>
+#include<winsock2.h> 
+
 
 #include<set>
 
@@ -138,8 +139,8 @@ void server()
 	memset((char *)&si_other, 0, sizeof(si_other));
 	si_other.sin_family = AF_INET;
 	si_other.sin_port = htons(PORT);
-	//si_other.sin_addr.s_addr = htonl((u_long)SERVER);
-	si_other.sin_addr.S_un.S_addr = inet_addr(SERVER);
+	si_other.sin_addr.S_un.S_addr = inet_addr("192.168.56.1"); //qui devo mettere il mio address
+	// ma allora mi serve un altra struttura dove inserire l'address broadcast where to send the message.
 
 	
 	//Bind
@@ -168,7 +169,6 @@ void server()
 		{
 			printf("data sended \n");
 		}
-
 
 
 		printf("Waiting for data...");
@@ -202,3 +202,9 @@ void server()
 	closesocket(s);
 	WSACleanup();
 }
+
+
+/*Socket binding is process of binding a socket to a network address within the system.
+When a socket is bound the server can accept client connections. 
+There are two types of socket binding, explicit and implicit socket binding..... 
+http://devlib.symbian.slions.net/s3/GUID-D1BCE2D9-04B5-5C39-A50B-C5BBDAAFEFED.html. */
