@@ -2,7 +2,18 @@
 //inserirli in un set di oggetti della classe utenti. qualcosa del genere.
 //usare le condition varible, per passare, al thread principale, ogni volta che si trova un nuovo 
 //utente. 
-//ora sono nel branch??? primo!!!
+
+
+
+/*merging of client func with serve func in order to use just a single thread to found out 
+on line users. 
+
+the strategy provides a infinite loop starting sending a broadcast message in the subnet. 
+then, the threat keep listening for answers.  
+
+goals:
+
+- using the same socket to send and to receive. */
 
 #include<thread> 
 #include<stdio.h>
@@ -105,6 +116,9 @@ void server()
 	WSADATA wsa;
 
 	std::set<std::string> onLine;
+
+
+
 
 
 	slen = sizeof(si_other);
