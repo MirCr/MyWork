@@ -2,7 +2,7 @@
 //inserirli in un set di oggetti della classe utenti. qualcosa del genere.
 //usare le condition varible, per passare, al thread principale, ogni volta che si trova un nuovo 
 //utente. 
-
+//ora sono nel branch??? primo!!!
 
 #include<thread> 
 #include<stdio.h>
