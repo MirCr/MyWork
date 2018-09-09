@@ -22,8 +22,10 @@
 #define PORT 8888   //The port on which to listen for incoming data
 
 
-void Sender(); //invia il messaggio ogni secondo in broadcast per sapere chi è online. 
-void Receiver(); // resta in ascolto di messaggi e invierà l'utente trovato al thread principale.
+void Sender(); //invia il suo User Name ogni secondo in broadcast per sapere chi è online. 
+			   //se necessario potrebbe inviare una stringa con le informazioni necessarie come
+			   // un flag per dire se on line o no ecc.....
+void Receiver(); // resta in ascolto delle informazioni.
 
 
 
@@ -48,7 +50,7 @@ void Sender() {
 	struct sockaddr_in si_other;
 	int s, slen = sizeof(si_other);
 	char buf[BUFLEN];
-	char message[BUFLEN] = "chi è on line?";
+	char message[BUFLEN] = "Mirko";
 	WSADATA wsa;
 
 	//Initialise winsock
@@ -161,14 +163,7 @@ void Receiver()
 		printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
 		printf("Data: %s\n", buf);
 		onLine.insert(inet_ntoa(si_other.sin_addr));
-		/*
-		//now reply the client with the same data
-		if (sendto(s, buf, recv_len, 0, (struct sockaddr*) &si_other, slen) == SOCKET_ERROR)
-		{
-			printf("sendto() failed with error code : %d", WSAGetLastError());
-			exit(EXIT_FAILURE);
-		}
-		*/
+		
 
 	}
 
