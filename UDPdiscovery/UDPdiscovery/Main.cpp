@@ -2,14 +2,19 @@
 //inserirli in un set di oggetti della classe utenti. qualcosa del genere.
 //usare le condition varible, per passare, al thread principale, ogni volta che si trova un nuovo 
 //utente. 
-// commit di prova! proviamo a cancellare questa riga. 
 
+
+/* oltre al nome utente potremmo iserire nel messaggio inviato anche un "flag" per identificare la modalità on line o of line. 
+oppure semplicemente non invia il messaggio. In questo caso bisogna gestire la possibilità 
+di attivare o disattivare l'invio del messagio. Vedere le specifiche per questo. 
+
+per poter passare il boolean condiviso tra i tread, si potrebbe prendere come riferimento l'esempio
+a slide 6 dell'argomento condition variable in cui si parla di atomic. Nel notro caso il sender invia solo se 
+l'atomic boolean è a true. */
 
 #include<thread> 
 #include<stdio.h>
 #include<winsock2.h>
-
-#include<set>
 
 
 
@@ -107,7 +112,7 @@ void Receiver()
 	char buf[BUFLEN];
 	WSADATA wsa;
 
-	std::set<std::string> onLine;
+	
 
 
 	slen = sizeof(si_other);
@@ -162,7 +167,7 @@ void Receiver()
 		//print details of the client/peer and the data received
 		printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
 		printf("Data: %s\n", buf);
-		onLine.insert(inet_ntoa(si_other.sin_addr));
+		//onLine.insert(inet_ntoa(si_other.sin_addr));
 		
 
 	}
