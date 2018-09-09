@@ -1,3 +1,3 @@
 ﻿  Origine.cpp
-c:\users\mirko\desktop\prova address\prova address\origine.cpp(60): warning C4715: 'print_ipaddress': non tutti i percorsi di controllo restituiscono un valore
-  prova address.vcxproj -> C:\Users\Mirko\Desktop\prova address\Debug\prova address.exe
+c:\users\mirko\documents\pdsproject\prova address\prova address\origine.cpp(60): warning C4715: 'print_ipaddress': non tutti i percorsi di controllo restituiscono un valore
+  prova address.vcxproj -> C:\Users\Mirko\Documents\PDSproject\prova address\Debug\prova address.exe

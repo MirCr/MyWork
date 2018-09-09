@@ -22,8 +22,8 @@
 #define PORT 8888   //The port on which to listen for incoming data
 
 
-void client(); //invia riputamente il messaggio in broadcast per sapere chi è online. 
-void server(); // resta in ascolto di messaggi e risponde con il proprio ip al mittente.
+void Sender(); //invia il messaggio ogni secondo in broadcast per sapere chi è online. 
+void Receiver(); // resta in ascolto di messaggi e invierà l'utente trovato al thread principale.
 
 
 
@@ -32,8 +32,8 @@ int main()
 	
 
 
-	std::thread t1{ client };
-	std::thread t2{ server };
+	std::thread t1{ Sender };
+	std::thread t2{ Receiver };
 
 	t1.join();
 	t2.join();
@@ -43,7 +43,7 @@ int main()
 
 
 
-void client() {
+void Sender() {
 
 	struct sockaddr_in si_other;
 	int s, slen = sizeof(si_other);
@@ -97,7 +97,7 @@ void client() {
 }
 
 
-void server()
+void Receiver()
 {
 	SOCKET s;
 	struct sockaddr_in server, si_other;
@@ -161,12 +161,14 @@ void server()
 		printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
 		printf("Data: %s\n", buf);
 		onLine.insert(inet_ntoa(si_other.sin_addr));
+		/*
 		//now reply the client with the same data
 		if (sendto(s, buf, recv_len, 0, (struct sockaddr*) &si_other, slen) == SOCKET_ERROR)
 		{
 			printf("sendto() failed with error code : %d", WSAGetLastError());
 			exit(EXIT_FAILURE);
 		}
+		*/
 
 	}
 

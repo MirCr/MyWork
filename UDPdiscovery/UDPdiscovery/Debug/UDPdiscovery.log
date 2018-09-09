@@ -1,4 +1,3 @@
 ﻿  Main.cpp
 c:\users\mirko\documents\pdsproject\udpdiscovery\udpdiscovery\main.cpp(50): warning C4101: 'buf': variabile locale senza riferimenti
-  LINK : C:\Users\Mirko\Documents\PDSproject\UDPdiscovery\Debug\UDPdiscovery.exe non trovato o non compilato dall'ultimo collegamento incrementale; verrà eseguito il collegamento completo
   UDPdiscovery.vcxproj -> C:\Users\Mirko\Documents\PDSproject\UDPdiscovery\Debug\UDPdiscovery.exe
