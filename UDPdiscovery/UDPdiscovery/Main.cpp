@@ -13,7 +13,8 @@ then, the threat keep listening for answers.
 
 goals:
 
-- using the same socket to send and to receive. */
+- using the same socket to send and to receive. DONE
+- Setting the right upd broadcast address in every subnet. */
 
 #include<thread> 
 #include<stdio.h>
@@ -28,13 +29,13 @@ goals:
 
 #pragma comment(lib,"ws2_32.lib") //Winsock Library
 
-#define SERVER "192.168.1.255"  //ip address of udp server
+
+#define BROADCAST_ADD "192.168.56.255" //Broadcast address
 #define BUFLEN 512  //Max length of buffer
 #define PORT 8888   //The port on which to listen for incoming data
 
 
-void client(); //invia riputamente il messaggio in broadcast per sapere chi è online. 
-void server(); // resta in ascolto di messaggi e risponde con il proprio ip al mittente.
+void UdpDiscovery(); // resta in ascolto di messaggi e risponde con il proprio ip al mittente.
 
 
 
@@ -43,10 +44,10 @@ int main()
 	
 
 
-	//std::thread t1{ client };
-	std::thread t2{ server };
+	
+	std::thread t2{ UdpDiscovery };
 
-	//t1.join();
+	
 	t2.join();
 
 	return 0;
@@ -54,65 +55,11 @@ int main()
 
 
 
-void client() {
 
-	struct sockaddr_in si_other;
-	int s, slen = sizeof(si_other);
-	char buf[BUFLEN];
-	char message[BUFLEN] = "chi è on line?";
-	WSADATA wsa;
-
-	//Initialise winsock
-	printf("\nInitialising Winsock...");
-	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-	{
-		printf("Failed. Error Code : %d", WSAGetLastError());
-		exit(EXIT_FAILURE);
-	}
-	printf("Initialised.\n");
-
-	//create socket
-	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR)
-	{
-		printf("socket() failed with error code : %d", WSAGetLastError());
-		exit(EXIT_FAILURE);
-	}
-
-	//setup address structure
-	memset((char *)&si_other, 0, sizeof(si_other));
-	si_other.sin_family = AF_INET;
-	si_other.sin_port = htons(PORT);
-	si_other.sin_addr.S_un.S_addr = inet_addr(SERVER);
-
-	//start communication
-	while (1)
-	{
-		//send the message
-		    
-		if (sendto(s, message, strlen(message), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
-		{
-			printf("sendto() failed with error code : %d", WSAGetLastError());
-			exit(EXIT_FAILURE);
-		}
-		Sleep(1000);
-	}
-
-	closesocket(s);
-	WSACleanup();
-
-
-
-
-
-
-
-}
-
-
-void server()
+void UdpDiscovery()
 {
-	struct sockaddr_in server, si_other;
-	int s, slen = sizeof(si_other) , recv_len;
+	struct sockaddr_in server, Receiving_si_other, Sending_si_other;
+	int s, slen = sizeof(Receiving_si_other) , recv_len;
 	char buf[BUFLEN];
 	char message[BUFLEN] = "chi è on line?"; //sender
 	WSADATA wsa;
@@ -135,16 +82,21 @@ void server()
 	}
 	printf("Socket created.\n");
 
-	//Prepare the sockaddr_in structure
-	memset((char *)&si_other, 0, sizeof(si_other));
-	si_other.sin_family = AF_INET;
-	si_other.sin_port = htons(PORT);
-	si_other.sin_addr.S_un.S_addr = inet_addr("192.168.56.1"); //qui devo mettere il mio address
-	// ma allora mi serve un altra struttura dove inserire l'address broadcast where to send the message.
+	//Prepare the sockaddr_in structure RECEIVING
+	memset((char *)&Receiving_si_other, 0, sizeof(Receiving_si_other));
+	Receiving_si_other.sin_family = AF_INET;
+	Receiving_si_other.sin_port = htons(PORT);
+	server.sin_addr.s_addr = INADDR_ANY;
+
+	//setup address structure SENDING
+	memset((char *)&Sending_si_other, 0, sizeof(Sending_si_other));
+	Sending_si_other.sin_family = AF_INET;
+	Sending_si_other.sin_port = htons(PORT);
+	Sending_si_other.sin_addr.S_un.S_addr = inet_addr(BROADCAST_ADD);
 
 	
 	//Bind
-	if (bind(s, (struct sockaddr *)&si_other, sizeof(si_other)) == SOCKET_ERROR)
+	if (bind(s, (struct sockaddr *)&Receiving_si_other, sizeof(Receiving_si_other)) == SOCKET_ERROR)
 	{
 		printf("Bind failed with error code : %d", WSAGetLastError());
 		Sleep(10000);
@@ -155,11 +107,11 @@ void server()
 	
 
 
-	//keep listening for data
+	//keep sending and listening for data
 	while (1)
 	{
 		//send the message
-		if (sendto(s, message, strlen(message), 0, (struct sockaddr *) &si_other, slen) == SOCKET_ERROR)
+		if (sendto(s, message, strlen(message), 0, (struct sockaddr *) &Sending_si_other, slen) == SOCKET_ERROR)
 		{
 			printf("sendto() failed with error code : %d", WSAGetLastError());
 			Sleep(10000);
@@ -167,7 +119,7 @@ void server()
 		}
 		else
 		{
-			printf("data sended \n");
+			printf("data sent \n");
 		}
 
 
@@ -178,7 +130,7 @@ void server()
 		memset(buf, '\0', BUFLEN);
 
 		//try to receive some data, this is a blocking call
-		if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
+		if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &Receiving_si_other, &slen)) == SOCKET_ERROR)
 		{
 			printf("recvfrom() failed with error code : %d", WSAGetLastError());
 			Sleep(10000);
@@ -186,11 +138,11 @@ void server()
 		}
 
 		//print details of the client/peer and the data received
-		printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
+		printf("Received packet from %s:%d\n", inet_ntoa(Receiving_si_other.sin_addr), ntohs(Receiving_si_other.sin_port));
 		printf("Data: %s\n", buf);
-		onLine.insert(inet_ntoa(si_other.sin_addr));
+		onLine.insert(inet_ntoa(Receiving_si_other.sin_addr));
 		//now reply the client with the same data
-		if (sendto(s, buf, recv_len, 0, (struct sockaddr*) &si_other, slen) == SOCKET_ERROR)
+		if (sendto(s, buf, recv_len, 0, (struct sockaddr*) &Receiving_si_other, slen) == SOCKET_ERROR)
 		{
 			printf("sendto() failed with error code : %d", WSAGetLastError());
 			Sleep(10000);
