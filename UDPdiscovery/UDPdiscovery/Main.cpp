@@ -3,6 +3,10 @@
 oppure semplicemente non invia il messaggio. In questo caso bisogna gestire la possibilità 
 di attivare o disattivare l'invio del messaggio. Vedere le specifiche per questo.  */
 
+/*implementare lo shared_ptr per poter usare gli oggetti
+nei due thread diversi? o usare operatore di movimento o
+copia o assegnazione?*/
+
 #include<thread> 
 #include<winsock2.h>
 #include<iostream>
