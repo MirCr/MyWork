@@ -6,26 +6,34 @@ di attivare o disattivare l'invio del messaggio. Vedere le specifiche per questo
 #include<thread> 
 #include<winsock2.h>
 #include<iostream>
-
+#include <mutex>
+#include <thread>
+#include <queue>
+#include <memory>
+#include<string.h>
 
 
 #pragma warning(disable:4996) // magari da modificare.
 
-#pragma comment(lib,"ws2_32.lib") //Winsock Library
+#pragma comment(lib,"ws2_32.lib") //Winsock Library.
 
-#define SERVER "192.168.1.255"  /*ip address of udp server. funziona ma da rivedere. 
+#define SERVER "192.168.56.255"  /*ip address of udp server. funziona ma da rivedere. 
 Se cambio sottorete, potrebbe cambiare. dovrei quindi ogni volta recuperare 
 il mio IP e settare 255 come ultima cifra? O c'è un altro modo?*/
-#define BUFLEN 512  //Max length of buffer
-#define PORT 8888   //The port on which to listen for incoming data
+#define BUFLEN 512  //Max length of buffer.
+#define PORT 8888   //The port on which to listen for incoming data.
+#define MAXQUEUESIZE 20 //Capacità massima del buffer condiviso tra Receiver e Consumer.
 
 
 void Sender(); /*invia il suo User Name ogni secondo in broadcast per sapere chi è online.
 			   se necessario potrebbe inviare una stringa con le informazioni necessarie 
 			   come un flag per dire se on line o no ecc....*/
 void Receiver(); /* resta in ascolto delle informazioni, riceve ip e username.*/
+void Consumer();
 
-
+std::mutex mut; //protegge la coda.
+std::queue<std::string> data_queue; //dato condiviso.
+std::condition_variable data_cond; //indica che la coda non è vuota.
 
 int main()
 {
@@ -34,9 +42,11 @@ int main()
 
 	std::thread t1{ Sender };
 	std::thread t2{ Receiver };
+	std::thread t3{ Consumer };
 
 	t1.join();
 	t2.join();
+	t3.join();
 
 	return 0;
 }
@@ -164,11 +174,33 @@ void Receiver()
 		//print details of the client/peer and the data received
 		std::cout << "Received packet from "<< inet_ntoa(si_other.sin_addr)<<" : "<< ntohs(si_other.sin_port)<< std::endl;
 		std::cout << "Data: " << buf << std::endl;
+
+		std::lock_guard<std::mutex> lk(mut); //Attivo il lock
+		if (data_queue.size() <= MAXQUEUESIZE) {
+			data_queue.push(buf);}/*Inserisco il dato nella queue se non ho raggiunto il limite*/
+		data_cond.notify_one();//Notifico e risveglio il consumatore.
 		//onLine.insert(inet_ntoa(si_other.sin_addr));
 		
 
-	}
+	} //solo chiudendo questa, distruggo il lock_guard e quindi richiamo l'unlock che sveglierà definitivamente il consumatore.
 
 	closesocket(s);
 	WSACleanup();
+}
+
+
+
+void Consumer()
+{
+	while (true)
+	{
+		std::unique_lock<std::mutex> lk(mut); //Lock.
+		data_cond.wait(lk, []() {return !data_queue.empty(); }); //Fai la wait solo se la coda non è vuota. Protezione verso le notifiche spurie.
+		std::string data = data_queue.front(); //Prendo il più vecchio.
+		//std::cout << "processo consumatore partitoooooo!!!" << std::endl;
+		data_queue.pop(); //rimuovo l'elemento appena preso.
+		lk.unlock();
+		std::cout<< std::endl << "il dato CONSUMATO E: ";
+		printf("%s\n", data.c_str());
+	}
 }
