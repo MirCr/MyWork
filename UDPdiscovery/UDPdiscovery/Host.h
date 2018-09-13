@@ -7,7 +7,7 @@ class Host
 private:
 	std::string name = NULL;
 	//bool online = NULL;
-	// IMAGE FOTO_PROFILO;
+	// file FOTO_PROFILO;
 public:
 	Host();
 	~Host();

@@ -21,7 +21,7 @@ copia o assegnazione?*/
 
 #pragma comment(lib,"ws2_32.lib") //Winsock Library.
 
-#define SERVER "192.168.56.255"  /*ip address of udp server. funziona ma da rivedere. 
+#define SERVER "192.168.1.255"  /*ip address of udp server. funziona ma da rivedere. 
 Se cambio sottorete, potrebbe cambiare. dovrei quindi ogni volta recuperare 
 il mio IP e settare 255 come ultima cifra? O c'è un altro modo?*/
 #define BUFLEN 512  //Max length of buffer.
@@ -99,6 +99,10 @@ void Sender() {
 		{
 			std::cout<<"sendto() failed with error code: "<< WSAGetLastError();
 			exit(EXIT_FAILURE);
+		}
+		else
+		{
+			std::cout << "data sent... \n";
 		}
 		Sleep(1000);
 	}
