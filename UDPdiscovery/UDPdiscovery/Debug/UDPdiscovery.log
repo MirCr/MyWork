@@ -1,5 +1,5 @@
-﻿  Host.cpp
-  Main.cpp
-c:\users\mirko\documents\pdsproject\udpdiscovery\udpdiscovery\main.cpp(64): warning C4101: 'buf': variabile locale senza riferimenti
-  Generazione del codice in corso...
-  UDPdiscovery.vcxproj -> C:\Users\Mirko\Documents\PDSproject\UDPdiscovery\Debug\UDPdiscovery.exe
+﻿  Main.cpp
+c:\users\mirko\documents\pdsproject\udpdiscovery\udpdiscovery\main.cpp(68): warning C4101: 'buf': variabile locale senza riferimenti
+c:\program files (x86)\microsoft visual studio\2017\enterprise\vc\tools\msvc\14.14.26428\include\mutex(715): error C2064: il termine non restituisce una funzione che accetta 0 argomenti
+  c:\program files (x86)\microsoft visual studio\2017\enterprise\vc\tools\msvc\14.14.26428\include\mutex(715): note: la classe non definisce un 'operator()' o un operatore di conversione definito dall'utente per una conversione da puntatore a funzione o da riferimento a funzione che accetta il numero di argomenti appropriato
+  c:\users\mirko\documents\pdsproject\udpdiscovery\udpdiscovery\main.cpp(210): note: vedere il riferimento all'istanza '<Sconosciuto>' della funzione <Sconosciuto> di cui è in corso la compilazione

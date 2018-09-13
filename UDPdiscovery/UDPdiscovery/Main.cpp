@@ -32,21 +32,25 @@ il mio IP e settare 255 come ultima cifra? O c'è un altro modo?*/
 void Sender(); /*invia il suo User Name ogni secondo in broadcast per sapere chi è online.
 			   se necessario potrebbe inviare una stringa con le informazioni necessarie 
 			   come un flag per dire se on line o no ecc....*/
-void Receiver(); /* resta in ascolto delle informazioni, riceve ip e username.*/
-void Consumer();
+void Receiver(const std::shared_ptr<std::mutex> &_mut, const std::shared_ptr<std::queue<std::string>> &data_queue, const std::shared_ptr<std::condition_variable> & data_cond); /* resta in ascolto delle informazioni, riceve ip e username.*/
+void Consumer(const std::shared_ptr<std::mutex> &_mut, const std::shared_ptr<std::queue<std::string>> &data_queue, const std::shared_ptr<std::condition_variable> & data_cond);
 
 std::mutex mut; //protegge la coda.
-std::queue<std::string> data_queue; //dato condiviso.
-std::condition_variable data_cond; //indica che la coda non è vuota.
 
 int main()
 {
-	
+	//std::mutex mut; //protegge la coda.
+	//std::queue<std::string> data_queue; //dato condiviso.
+	//std::condition_variable data_cond; //indica che la coda non è vuota.
+
+	std::shared_ptr<std::mutex> _mut(new std::mutex);
+	std::shared_ptr<std::queue<std::string>> _data_queue(new std::queue<std::string>);
+	std::shared_ptr < std::condition_variable> _data_cond(new std::condition_variable);
 
 
 	std::thread t1{ Sender };
-	std::thread t2{ Receiver };
-	std::thread t3{ Consumer };
+	std::thread t2{ Receiver, _mut, _data_queue,_data_cond };
+	std::thread t3{ Consumer, _mut, _data_queue,_data_cond };
 
 	t1.join();
 	t2.join();
@@ -119,7 +123,7 @@ void Sender() {
 }
 
 
-void Receiver()
+void Receiver(const std::shared_ptr<std::mutex> &_mut, const std::shared_ptr<std::queue<std::string>> &data_queue, const std::shared_ptr<std::condition_variable> & data_cond)
 {
 	SOCKET s;
 	struct sockaddr_in server, si_other;
@@ -184,9 +188,9 @@ void Receiver()
 		std::cout << "Data: " << buf << std::endl;
 
 		std::lock_guard<std::mutex> lk(mut); //Attivo il lock
-		if (data_queue.size() <= MAXQUEUESIZE) {
-			data_queue.push(buf);}/*Inserisco il dato nella queue se non ho raggiunto il limite*/
-		data_cond.notify_one();//Notifico e risveglio il consumatore.
+		if (data_queue->size() <= MAXQUEUESIZE) {
+			data_queue->push(buf);}/*Inserisco il dato nella queue se non ho raggiunto il limite*/
+		data_cond->notify_one();//Notifico e risveglio il consumatore.
 		//onLine.insert(inet_ntoa(si_other.sin_addr));
 		
 
@@ -198,15 +202,15 @@ void Receiver()
 
 
 
-void Consumer()
+void Consumer(const std::shared_ptr<std::mutex> &_mut, const std::shared_ptr<std::queue<std::string>> &data_queue, const std::shared_ptr<std::condition_variable> & data_cond)
 {
 	while (true)
 	{
 		std::unique_lock<std::mutex> lk(mut); //Lock.
-		data_cond.wait(lk, []() {return !data_queue.empty(); }); //Fai la wait solo se la coda non è vuota. Protezione verso le notifiche spurie.
-		std::string data = data_queue.front(); //Prendo il più vecchio.
+		data_cond->wait(lk, [](const std::shared_ptr<std::queue<std::string>> &data_queue) {return !data_queue->empty(); }); //Fai la wait solo se la coda non è vuota. Protezione verso le notifiche spurie.
+		std::string data = data_queue->front(); //Prendo il più vecchio. e lo copio subito in una viariablile locare così posso rilasciare il prima possibile la risorsa condivisa.
 		//std::cout << "processo consumatore partitoooooo!!!" << std::endl;
-		data_queue.pop(); //rimuovo l'elemento appena preso.
+		data_queue->pop(); //rimuovo l'elemento appena preso.
 		lk.unlock();
 		std::cout<< std::endl << "il dato CONSUMATO E: ";
 		printf("%s\n", data.c_str());
